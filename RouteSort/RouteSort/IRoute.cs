@@ -1,7 +1,7 @@
 ﻿namespace RouteSort
 {
     /// <summary>
-    /// Информация о маршруте.
+    ///     Информация о маршруте.
     /// </summary>
     public interface IRoute<T>
     {

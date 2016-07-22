@@ -1,24 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 
 namespace RouteSort
 {
-
     public static class RouteSorter
     {
         /// <summary>
-        /// Метод, сортирующий маршруты в порядке их непрерывного следования, так что окончание одного становится началом другого.
+        ///     Метод, сортирующий маршруты в порядке их непрерывного следования, так что окончание одного становится началом
+        ///     другого.
         /// </summary>
-        /// <exception cref="InvalidOperationException">Если непрерывных цепочек маршрутов более одной</exception>
-        /// <exception cref="MultipleStartPointException">Если несколько маршрутов начинаются некоторым пунктом</exception>
-        /// <exception cref="MultipleEndPointException">Если несколько маршрутов оканчиваются некоторым пунктом</exception>
+        /// <exception cref="NotSingleRouteException">Если непрерывных цепочек маршрутов более одной</exception>
+        /// <exception cref="CycleExistsException">Если обнаружены циклы</exception>
         public static IList<IRoute<T>> Sort<T>(IEnumerable<IRoute<T>> routes)
         {
             return RouteSorterInternal<T>.Sort(routes);
         }
     }
-    static class RouteSorterInternal<T>
+
+    internal static class RouteSorterInternal<T>
     {
         public static IList<IRoute<T>> Sort(IEnumerable<IRoute<T>> routes)
         {
@@ -31,15 +30,23 @@ namespace RouteSort
         {
             if (!connectionMap.Any())
                 return new List<IRoute<T>>();
-
-            var startOfPath = connectionMap.Single(a => a.Value.PreviousRoute == null);
+            var startPoints = connectionMap.Where(a => a.Value.PreviousRoute == null).Take(2).ToArray();
+            if (startPoints.Length == 0)
+                throw new CycleExistsException();
+            if (startPoints.Length > 1)
+                throw new NotSingleRouteException();
+            var startOfPath = startPoints.Single();
             var result = new List<IRoute<T>>();
             var currentRoute = startOfPath.Value.NextRoute;
             while (currentRoute != null)
             {
                 result.Add(currentRoute);
-                currentRoute = connectionMap[currentRoute.EndPoint].NextRoute;
+                var endPoint = currentRoute.EndPoint;
+                currentRoute = connectionMap[endPoint].NextRoute;
+                connectionMap.Remove(endPoint);
             }
+            if (connectionMap.Count > 1)
+                throw new NotSingleRouteException();
             return result;
         }
 
@@ -52,7 +59,7 @@ namespace RouteSort
                 if (connectionsMap.TryGetValue(route.StartPoint, out startPoint))
                 {
                     if (startPoint.NextRoute != null)
-                        throw new MultipleStartPointException($"{route.StartPoint}");
+                        throw new NotSingleRouteException();
                     startPoint.NextRoute = route;
                 }
                 else
@@ -64,7 +71,7 @@ namespace RouteSort
                 if (connectionsMap.TryGetValue(route.EndPoint, out endPoint))
                 {
                     if (endPoint.PreviousRoute != null)
-                        throw new MultipleEndPointException($"{route.EndPoint}");
+                        throw new NotSingleRouteException();
                     endPoint.PreviousRoute = route;
                 }
                 else

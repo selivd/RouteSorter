@@ -2,9 +2,8 @@
 
 namespace RouteSort
 {
-
     /// <summary>
-    /// Некоторая реализация контракта маршрута
+    ///     Некоторая частная реализация контракта маршрута
     /// </summary>
     /// <typeparam name="T"></typeparam>
     internal class Route<T> : IRoute<T>
@@ -20,7 +19,6 @@ namespace RouteSort
         }
 
         public T StartPoint { get; }
-        
         public T EndPoint { get; }
         public override string ToString() => $"{StartPoint}->{EndPoint}";
     }

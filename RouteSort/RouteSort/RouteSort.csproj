@@ -43,9 +43,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CycleExistsException.cs" />
     <Compile Include="IRoute.cs" />
-    <Compile Include="MultipleEndPointException.cs" />
-    <Compile Include="MultipleStartPointException.cs" />
+    <Compile Include="NotSingleRouteException.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Route.cs" />
